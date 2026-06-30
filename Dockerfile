@@ -1,15 +1,16 @@
 FROM python:3.11-slim
 
-WORKDIR /app
-
-# 安装依赖
-COPY backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 安装依赖（requirements 在 backend/ 目录）
+COPY backend/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # 复制后端代码
-COPY backend/ ./backend/
+COPY backend/ /app/
 
-# 数据/上传目录（运行时挂载持久卷）
+# 切换工作目录
+WORKDIR /app
+
+# 数据/上传目录
 RUN mkdir -p /data/uploads
 
 # 环境变量
@@ -21,5 +22,4 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-# 启动时自动建表，数据库文件由持久卷提供
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
