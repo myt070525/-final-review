@@ -37,6 +37,37 @@ app.add_middleware(
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
+
+# ── 数据库恢复 ─────────────────────────────
+from fastapi import UploadFile, File
+from fastapi.responses import JSONResponse
+import shutil, tempfile
+
+
+@app.post("/api/admin/restore-db")
+async def restore_db(file: UploadFile = File(...)):
+    """上传 SQLite 数据库文件替换当前数据库（仅管理员使用）"""
+    if not file.filename or not file.filename.endswith(".db"):
+        return JSONResponse({"error": "只接受 .db 文件"}, status_code=400)
+    # 先写到临时文件验证
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".db")
+    try:
+        shutil.copyfileobj(file.file, tmp)
+        tmp.close()
+        # 简单校验：能打开
+        import sqlite3
+        conn = sqlite3.connect(tmp.name)
+        conn.execute("SELECT COUNT(*) FROM questions")
+        conn.close()
+        # 覆盖目标
+        shutil.copy(tmp.name, "/data/study.db")
+        os.unlink(tmp.name)
+        return {"ok": True, "message": "数据库已恢复，请重启应用使连接池重建"}
+    except Exception as e:
+        os.unlink(tmp.name)
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
 from routes import subjects, questions, quiz, documents, java, answers, bookmarks
 
 app.include_router(subjects.router, prefix="/api", tags=["subjects"])
