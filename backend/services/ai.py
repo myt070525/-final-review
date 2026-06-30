@@ -254,13 +254,15 @@ def generate_explanation(
 正确答案：{answer}"""
         max_tokens = 1024
     else:
+        option_analysis_template = "- A：...\n- B：...\n- C：...\n- D：...（逐个分析每个选项的对错原因）"
+        option_analysis_section = option_analysis_template if options else "（本题无选项，可省略此节）"
         prompt = f"""请为下面这道{question_type}题生成解析。用纯 Markdown 格式输出（严禁使用 HTML 标签如 <p> <strong> <h3> <ul> <li> <ol> <table> <tr> <td> <div> <span> 等），结构如下：
 
 ### 正确答案
 （正确答案及分析，包含推导过程）
 
 ### 选项分析
-{("- A：...\n- B：...\n- C：...\n- D：...（逐个分析每个选项的对错原因）") if options else "（本题无选项，可省略此节）"}
+{option_analysis_section}
 
 ### 知识点总结
 （列出本题涉及的知识点，用无序列表）
