@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <script>
-    // SPA fallback: redirect to index.html with hash
-    sessionStorage.redirect = location.href;
-    location.replace("/-final-review/" + location.hash);
-  </script>
-</head>
-<body></body>
-</html>
+<html><head><meta charset="UTF-8"><script>
+// SPA fallback for GitHub Pages
+var path = location.pathname.replace(/\/$/, "");
+var base = "/-final-review";
+if (path.indexOf(base) === 0) {
+  location.replace(base + "/#" + path.slice(base.length));
+} else {
+  location.replace(base + "/");
+}
+</script></head><body></body></html>
