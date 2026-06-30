@@ -1,0 +1,26 @@
+# Render Blueprint — 一键部署后端
+# 在 Render Dashboard 创建 Blueprint 实例，指向此仓库即可
+
+services:
+  - type: web
+    name: final-review-api
+    runtime: python
+    plan: free
+    region: singapore  # 新加坡节点，国内访问较快
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////data/study.db
+      - key: DATA_DIR
+        value: /data
+      - key: UPLOAD_DIR
+        value: /data/uploads
+      - key: DEEPSEEK_API_KEY
+        sync: false           # 手动在 Render Dashboard 填写
+      - key: CORS_ORIGINS
+        value: "*"
+    disk:
+      name: data-disk
+      mountPath: /data
+      sizeGB: 1               # 免费套餐 1GB 足够

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#5B6CFF" />
+  <title>期末刷题 · 马克思主义基本原理 / 中国近现代史纲要</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部导航 -->
+    <header class="topbar" id="topbar">
+      <button class="icon-btn" id="backBtn" aria-label="返回" hidden>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 class="title" id="pageTitle">期末刷题</h1>
+      <button class="icon-btn" id="homeBtn" aria-label="首页" title="返回首页">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+      </button>
+    </header>
+
+    <main id="main">
+      <!-- 首页：选择科目 -->
+      <section class="view view-home active" data-view="home">
+        <div class="hero">
+          <div class="hero-bg"></div>
+          <div class="hero-inner">
+            <div class="hero-tag">期末复习加油站</div>
+            <h2 class="hero-title">刷题，从这里开始</h2>
+            <p class="hero-sub">选择题型 · 选择模式 · 立即开刷</p>
+          </div>
+        </div>
+        <div class="subject-grid" id="subjectGrid">
+          <!-- JS 渲染 -->
+        </div>
+        <div class="footer-tip">所有进度本地保存，不会上传你的答题记录</div>
+      </section>
+
+      <!-- 模式选择页 -->
+      <section class="view view-modes" data-view="modes">
+        <div class="subject-banner" id="subjectBanner"></div>
+        <div class="card">
+          <div class="card-title">题型筛选</div>
+          <div class="type-pills" id="typePills">
+            <button class="pill" data-type="all" data-active="1">全部</button>
+            <button class="pill" data-type="single">单选题</button>
+            <button class="pill" data-type="multi">多选题</button>
+            <button class="pill" data-type="judge">判断题</button>
+            <button class="pill" data-type="short">简答题</button>
+            <button class="pill" data-type="essay">论述题</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">章节范围</div>
+          <div class="chapter-pills" id="chapterPills">
+            <button class="pill" data-chapter="all" data-active="1">全部章节</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">练习模式</div>
+          <div class="mode-grid">
+            <button class="mode-card" data-mode="random">
+              <div class="mode-icon" style="background:linear-gradient(135deg,#5B6CFF,#8E5BFF)">⚡</div>
+              <div class="mode-name">随机刷题</div>
+              <div class="mode-desc">随机抽题，错题自动收藏</div>
+            </button>
+            <button class="mode-card" data-mode="sequential">
+              <div class="mode-icon" style="background:linear-gradient(135deg,#22C55E,#06B6D4)">📚</div>
+              <div class="mode-name">逐题练习</div>
+              <div class="mode-desc">按章节顺序一题一题过</div>
+            </button>
+            <button class="mode-card" data-mode="wrong">
+              <div class="mode-icon" style="background:linear-gradient(135deg,#F43F5E,#F59E0B)">🔥</div>
+              <div class="mode-name">错题重练</div>
+              <div class="mode-desc">只刷错题，巩固薄弱点</div>
+            </button>
+            <button class="mode-card" data-mode="exam">
+              <div class="mode-icon" style="background:linear-gradient(135deg,#0EA5E9,#5B6CFF)">🏆</div>
+              <div class="mode-name">模拟考试</div>
+              <div class="mode-desc">限时作答，自动判分</div>
+            </button>
+          </div>
+        </div>
+        <div class="card" id="examConfigCard" hidden>
+          <div class="card-title">考试配置</div>
+          <div class="form-row">
+            <label>题量</label>
+            <input id="examCount" type="number" min="5" max="100" value="20" />
+          </div>
+          <div class="form-row">
+            <label>限时（分钟）</label>
+            <input id="examDuration" type="number" min="1" max="180" value="15" />
+          </div>
+        </div>
+        <button class="primary-btn" id="startBtn" disabled>请选择模式开始</button>
+      </section>
+
+      <!-- 答题页 -->
+      <section class="view view-quiz" data-view="quiz">
+        <div class="quiz-top">
+          <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="quiz-meta">
+            <span id="quizProgress">1 / 10</span>
+            <span id="quizMode">随机刷题</span>
+            <span id="quizTimer" hidden>⏱ <em id="timerText">00:00</em></span>
+          </div>
+        </div>
+        <div class="question-card" id="questionCard">
+          <!-- JS 渲染 -->
+        </div>
+        <div class="quiz-actions">
+          <button class="ghost-btn" id="prevBtn">上一题</button>
+          <button class="ghost-btn" id="showAnswerBtn">查看答案</button>
+          <button class="primary-btn" id="nextBtn">下一题</button>
+        </div>
+      </section>
+
+      <!-- 错题库页 -->
+      <section class="view view-wrong" data-view="wrong">
+        <div class="section-header">
+          <h2>错题题库</h2>
+          <button class="ghost-btn small" id="clearWrongBtn">清空</button>
+        </div>
+        <div class="stats-row" id="wrongStats"></div>
+        <div class="wrong-list" id="wrongList"></div>
+        <div class="empty-state" id="wrongEmpty" hidden>
+          <div class="empty-icon">🎉</div>
+          <div class="empty-text">太棒了！还没有错题</div>
+        </div>
+      </section>
+
+      <!-- 考试结果页 -->
+      <section class="view view-result" data-view="result">
+        <div class="result-card">
+          <div class="result-score">
+            <div class="score-num" id="resultScore">0</div>
+            <div class="score-total">/ <span id="resultTotal">0</span></div>
+            <div class="score-label">本次得分</div>
+          </div>
+          <div class="result-stats" id="resultStats"></div>
+          <div class="result-actions">
+            <button class="primary-btn" id="reviewBtn">查看解析</button>
+            <button class="ghost-btn" id="backHomeBtn">返回首页</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部 Tab 栏 -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab" data-go="home" data-active="1">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+        <span>首页</span>
+      </button>
+      <button class="tab" data-go="wrong">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+        <span>错题</span>
+      </button>
+    </nav>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" hidden></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
