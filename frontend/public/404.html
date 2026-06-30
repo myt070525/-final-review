@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // SPA fallback: redirect to index.html with hash
+    sessionStorage.redirect = location.href;
+    location.replace("/-final-review/" + location.hash);
+  </script>
+</head>
+<body></body>
+</html>
