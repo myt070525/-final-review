@@ -652,3 +652,105 @@ AI 部分题目返回 `"answer": null`（无法判断答案），代码 `item.ge
 | `frontend/src/pages/WrongQuestions.tsx` | 解析渲染换 MarkdownRenderer |
 | `frontend/src/pages/QuestionBank.tsx` | 解析渲染换 MarkdownRenderer |
 | `frontend/src/pages/JavaMockResult.tsx` | 解析渲染换 MarkdownRenderer |
+
+---
+
+## Phase 8 — 收藏夹笔记 & 移动端刷题 (2026-06-29)
+
+### 收藏夹笔记功能
+
+| 文件 | 变更 |
+|------|------|
+| `backend/models.py` | Bookmark 模型新增 `notes = Column(Text, default="")` |
+| `backend/routes/bookmarks.py` | 新增 `PUT /api/bookmarks/{question_id}/notes` 端点；列表接口返回 notes 字段 |
+| `data/study.db` | `ALTER TABLE bookmarks ADD COLUMN notes TEXT` |
+| `frontend/src/services/api.ts` | 新增 `updateBookmarkNotes()` |
+| `frontend/src/pages/Bookmarks.tsx` | 每道收藏题展开后显示📝笔记文本框，失焦自动保存，保存中loading状态 |
+
+### 移动端刷题 HTML（已废弃/删除）
+
+- 创建了独立 `review.html`（583题马克思+近代史，离线可用），后因刷题答案判断逻辑有 bug 且用户要求删除
+- 相关文件 `build_mobile_review.py`、`frontend/public/review.html`、Home.tsx 横幅已全部清理
+
+### 其他
+
+| 文件 | 变更 |
+|------|------|
+| `frontend/src/pages/Home.tsx` | 添加又移除移动端刷题入口横幅 |
+| `.gitignore` | 新增 `.claude/`、`.workbuddy/`、`*.bak` 排除规则 |
+
+---
+
+## Phase 9 — 全栈部署到公网 (2026-06-30)
+
+### 部署架构
+
+```
+手机/电脑浏览器
+    ↓
+GitHub Pages (前端) ← GitHub Actions 自动构建
+    ↓ API 请求
+Sealos 容器云 (后端) ← Docker 镜像 ghcr.io/myt070525/final-review
+    ↓
+持久卷 /data/study.db (SQLite, 4学科1394题)
+```
+
+### 前端部署适配
+
+| 文件 | 变更 | 原因 |
+|------|------|------|
+| `frontend/vite.config.ts` | `base: process.env.VITE_BASE \|\| "/"` | GitHub Pages 项目页路径 `/仓库名/` |
+| `frontend/src/main.tsx` | `BrowserRouter` → `HashRouter basename="/"` | 静态托管无 history fallback |
+| `frontend/src/services/api.ts` | `BASE = import.meta.env.VITE_API_BASE \|\| "/api"` | 部署时指向远端后端 |
+| `frontend/index.html` | 添加「加载中...」骨架 | 排查空白页用 |
+| `frontend/public/404.html` | **新建** — SPA fallback 重定向 | GitHub Pages 无服务端路由 |
+
+### 新增部署配置
+
+| 文件 | 用途 |
+|------|------|
+| `.github/workflows/deploy.yml` | push main 自动 vite build + 部署到 GitHub Pages |
+| `.github/workflows/docker.yml` | push main 自动构建 Docker 镜像 → ghcr.io |
+| `Dockerfile` | FastAPI + SQLite 容器化，python:3.11-slim |
+| `.dockerignore` | 排除 node_modules / dist / .git 等 |
+| `DEPLOY.md` | 8 步全流程部署指南 |
+
+### 后端适配 & Bug 修复
+
+| 文件 | 变更 |
+|------|------|
+| `backend/services/ai.py` | f-string `\n` 提取为变量（Python 3.11 兼容） |
+| `backend/main.py` | 新增 `POST /api/admin/restore-db` 数据库上传接口 |
+| `backend/config.py` | 已支持 `DATABASE_URL`、`DATA_DIR`、`UPLOAD_DIR` 环境变量覆盖 |
+
+### GitHub Actions 变量（仓库 Settings）
+
+| 变量 | 值 |
+|------|-----|
+| `VITE_BASE` | `/-final-review/` |
+| `VITE_API_BASE` | `https://ryxkyxmwzbpe.sealoshzh.site/api` |
+
+### Sealos 部署参数
+
+- 镜像：`ghcr.io/myt070525/final-review:latest`（注意不含前导 `-`，因 Docker 命名限制）
+- 端口：8000，内存：512Mi，存储卷：`/data` 1Gi
+- 环境变量：`CORS_ORIGINS=*`
+- 公网地址：`https://ryxkyxmwzbpe.sealoshzh.site`
+
+### 踩坑记录
+
+| 问题 | 解决 |
+|------|------|
+| Render.com 被墙 | 换 Sealos |
+| 仓库名 `-final-review` 导致 Docker 镜像名非法 | 镜像名改为 `myt070525/final-review` |
+| `data/study.db` 被 GitHub push protection 拦截 | 不提交数据库，改用恢复接口上传 |
+| Python 3.11 f-string 花括号内不能有 `\n` | 提取 `\n` 字符串为独立变量 |
+| Docker WORKDIR 错误导致 `ModuleNotFoundError` | COPY 代码到 `/app/` 直接运行 |
+| Git Bash 本地构建 `VITE_BASE` 路径被污染为 `/Program Files/Git/...` | 仅影响本地构建，GitHub Actions Ubuntu 环境正常 |
+| 部署后页面空白 | 待排查：已修路径/添加404/添加加载指示器 |
+
+### GitHub 仓库信息
+
+- 地址：https://github.com/myt070525/-final-review
+- 前端：https://myt070525.github.io/-final-review/
+- 后端：https://ryxkyxmwzbpe.sealoshzh.site
